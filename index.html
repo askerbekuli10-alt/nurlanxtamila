@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nurlan & Tamila</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+body{
+margin:0;
+font-family:'Montserrat',sans-serif;
+background:#f6efe7;
+color:#3b271f;
+overflow-x:hidden;
+}
+.hero{
+height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+background:linear-gradient(to bottom,#efe1cf,#f6efe7);
+text-align:center;
+padding:20px;
+}
+.card{
+max-width:420px;
+width:100%;
+background:rgba(255,255,255,.6);
+backdrop-filter:blur(10px);
+padding:40px 30px;
+border-radius:32px;
+box-shadow:0 10px 40px rgba(0,0,0,.08);
+}
+h1,h2{
+font-family:'Cormorant Garamond',serif;
+}
+h1{
+font-size:64px;
+margin:0;
+font-weight:600;
+}
+.subtitle{
+letter-spacing:4px;
+text-transform:uppercase;
+font-size:12px;
+margin-bottom:16px;
+}
+.btn{
+display:inline-block;
+margin-top:24px;
+padding:14px 28px;
+border-radius:999px;
+background:#3b271f;
+color:white;
+text-decoration:none;
+}
+.section{
+padding:80px 24px;
+max-width:700px;
+margin:auto;
+}
+.photo{
+width:100%;
+border-radius:28px;
+overflow:hidden;
+box-shadow:0 10px 30px rgba(0,0,0,.1);
+}
+.photo img{
+width:100%;
+display:block;
+}
+.timeline{
+display:grid;
+gap:18px;
+margin-top:30px;
+}
+.item{
+display:grid;
+grid-template-columns:80px 1fr;
+gap:20px;
+}
+.time{
+font-weight:600;
+}
+.palette{
+display:flex;
+justify-content:center;
+gap:12px;
+margin:24px 0;
+}
+.circle{
+width:42px;
+height:42px;
+border-radius:50%;
+}
+.footer{
+text-align:center;
+padding:60px 20px;
+opacity:.7;
+}
+.mapbtn{
+display:inline-block;
+padding:14px 26px;
+border-radius:999px;
+background:#b08957;
+color:white;
+text-decoration:none;
+margin-top:20px;
+}
+</style>
+</head>
+<body>
+
+<section class="hero">
+<div class="card">
+<div class="subtitle">Wedding Invitation</div>
+<h1>Нурлан & Тамила</h1>
+<p>15 августа 2026 • 17:30</p>
+<p>Magauya Grand Hall</p>
+<a class="btn" href="#invite">Открыть приглашение</a>
+</div>
+</section>
+
+<section class="section" id="invite">
+<div class="photo">
+<img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=1200&auto=format&fit=crop">
+</div>
+
+<h2 style="font-size:48px;text-align:center;margin-top:50px;">Дорогие гости</h2>
+
+<p style="line-height:1.9;text-align:center;">
+С большой радостью приглашаем вас разделить с нами один из самых важных и красивых дней в нашей жизни.
+</p>
+
+<h2 style="font-size:46px;text-align:center;margin-top:70px;">Программа вечера</h2>
+
+<div class="timeline">
+<div class="item">
+<div class="time">17:30</div>
+<div>Сбор гостей, welcome-зона и фотографии</div>
+</div>
+
+<div class="item">
+<div class="time">18:00</div>
+<div>Торжественное начало вечера</div>
+</div>
+
+<div class="item">
+<div class="time">18:30</div>
+<div>Праздничный ужин и музыкальная программа</div>
+</div>
+
+<div class="item">
+<div class="time">20:30</div>
+<div>Танцы и продолжение праздника</div>
+</div>
+</div>
+
+<h2 style="font-size:46px;text-align:center;margin-top:70px;">Dress Code</h2>
+
+<div class="palette">
+<div class="circle" style="background:#5b3928"></div>
+<div class="circle" style="background:#c08b53"></div>
+<div class="circle" style="background:#d7c0a1"></div>
+<div class="circle" style="background:#3f2a22"></div>
+<div class="circle" style="background:#d6af58"></div>
+</div>
+
+<p style="line-height:1.9;text-align:center;">
+Нам будет особенно приятно, если вы поддержите атмосферу нашего вечера в теплых оттенках кофейного, шоколадного, карамельного, бежевого и золотого цветов.
+</p>
+
+<p style="line-height:1.9;text-align:center;">
+Белый цвет мы с любовью оставляем только для невесты 🤍
+</p>
+
+<h2 style="font-size:42px;text-align:center;margin-top:70px;">Вечер для взрослых</h2>
+
+<p style="line-height:1.9;text-align:center;">
+Мы очень любим малышей, но будем благодарны, если в этот вечер они останутся дома. Пусть праздник станет для каждого гостя временем отдыха, легкости и красивых эмоций.
+</p>
+
+<h2 style="font-size:46px;text-align:center;margin-top:70px;">Локация</h2>
+
+<p style="text-align:center;">Magauya Grand Hall</p>
+
+<div style="text-align:center;">
+<a class="mapbtn" href="https://2gis.kz/almaty/geo/70000001111187725" target="_blank">
+Открыть в 2GIS
+</a>
+</div>
+
+</section>
+
+<div class="footer">
+15.08.2026 • N & T
+</div>
+
+</body>
+</html>
