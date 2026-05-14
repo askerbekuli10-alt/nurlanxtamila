@@ -1,0 +1,2042 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Нурлан & Тамила — 15.08.2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f5efe6;
+    --coffee: #6b4c3b;
+    --caramel: #c19a6b;
+    --gold: #d4a853;
+    --chocolate: #3d2314;
+    --beige: #e8d5b7;
+    --light: #faf6f0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Montserrat', sans-serif;
+    background: var(--cream);
+    color: var(--chocolate);
+    overflow-x: hidden;
+  }
+
+  /* ===== LANGUAGE TOGGLE ===== */
+  #lang-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 9999;
+    display: flex;
+    gap: 4px;
+    background: rgba(255,255,255,0.8);
+    backdrop-filter: blur(8px);
+    border-radius: 20px;
+    padding: 4px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  }
+  .lang-btn {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 16px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: transparent;
+    color: var(--coffee);
+  }
+  .lang-btn.active {
+    background: var(--caramel);
+    color: white;
+  }
+
+  /* Envelope section clips card while it's inside */
+  #envelope-section {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: linear-gradient(150deg, #f7f0e6 0%, #ede2cc 40%, #e8d8b8 100%);
+    overflow: hidden;
+    cursor: pointer;
+  }
+  /* Once card starts rising we remove overflow:hidden via JS */
+  #envelope-section.card-rising {
+    overflow: visible;
+  }
+
+  /* Subtle warm vignette */
+  #envelope-section::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(100,70,30,0.18) 100%);
+    pointer-events: none;
+  }
+
+  /* ── ENVELOPE LAYERS ── */
+  /* The trick: 3 separate positioned divs stacked:
+     1. #env-back   – body + side/bottom flaps (bottom z)
+     2. #env-card   – invitation card          (middle z, slides up)
+     3. #env-flap   – top flap SVG             (top z, folds back)
+     4. #env-seal   – wax seal                 (on flap, disappears)
+  */
+
+  #env-back, #env-card-layer, #env-flap-layer, #env-seal-layer {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  /* Envelope body size — fills most of screen */
+  #env-back {
+    width: min(92vw, 110vh);
+    height: min(64vw, 76vh);
+    z-index: 10;
+  }
+
+  #env-card-layer {
+    width: min(38vw, 46vh);
+    height: min(58vw, 70vh);
+    z-index: 20;
+    /* Card starts invisible and pushed down */
+    transform: translate(-50%, calc(-50% + min(24vw, 29vh)));
+    transition: transform 1.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s;
+    opacity: 0;
+    visibility: hidden;
+  }
+  #env-card-layer.visible {
+    opacity: 1;
+    visibility: visible;
+  }
+  #env-card-layer.risen {
+    transform: translate(-50%, calc(-50% - min(16vw, 20vh)));
+  }
+
+  /* Flap layer — exact same size/position as envelope body */
+  #env-flap-layer {
+    width: min(92vw, 110vh);
+    height: min(64vw, 76vh);
+    z-index: 30;               /* On top of card while closed */
+    transition: transform 1.25s cubic-bezier(0.4, 0, 0.15, 1);
+    transform: translate(-50%, -50%);  /* default centred */
+    filter: drop-shadow(0 6px 18px rgba(0,0,0,0.22));
+  }
+  /* JS sets transform inline on open, so no .open class needed */
+
+  /* Seal sits centred on the flap fold line */
+  #env-seal-layer {
+    width: min(18vw, 21vh);
+    height: min(18vw, 21vh);
+    z-index: 35;
+    transition: opacity 0.4s, transform 0.4s;
+    /* position it at fold line = slightly below centre */
+    top: calc(50% + min(1vw, 1.2vh));
+  }
+  #env-seal-layer.hidden {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2) rotate(20deg);
+  }
+
+  /* ── Tap hint ── */
+  #tap-hint {
+    position: absolute;
+    bottom: 8%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--caramel);
+    font-size: clamp(14px, 3vw, 20px);
+    animation: pulse 2s infinite;
+    white-space: nowrap;
+    pointer-events: none;
+    transition: opacity 0.4s;
+    letter-spacing: 2px;
+    z-index: 50;
+  }
+  @keyframes pulse { 0%,100%{opacity:0.45} 50%{opacity:1} }
+
+  /* ── Header ── */
+  #env-header {
+    position: absolute;
+    top: 6%;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    pointer-events: none;
+    z-index: 50;
+  }
+  .env-header-sub {
+    font-family: 'Montserrat', sans-serif;
+    font-size: clamp(8px, 1.8vw, 12px);
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--caramel);
+    margin-bottom: 6px;
+    opacity: 0.8;
+  }
+  .env-header-names {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(20px, 5.5vw, 46px);
+    color: var(--chocolate);
+    font-style: italic;
+    line-height: 1;
+  }
+
+  /* Floating deco */
+  .env-deco {
+    position: absolute;
+    pointer-events: none;
+    color: var(--caramel);
+    opacity: 0;
+    animation: floatDeco 7s ease-in-out infinite;
+    z-index: 5;
+  }
+  @keyframes floatDeco {
+    0%  { opacity:0; transform:translateY(8px) rotate(0deg); }
+    25% { opacity:0.4; }
+    75% { opacity:0.4; }
+    100%{ opacity:0; transform:translateY(-70px) rotate(20deg); }
+  }
+
+  /* ===== MAIN CONTENT ===== */
+  /* ===== MAIN CONTENT ===== */
+  /* ===== MAIN CONTENT ===== */
+  #main-content {
+    display: none;
+    opacity: 0;
+    transition: opacity 1s;
+  }
+  #main-content.visible {
+    display: block;
+    opacity: 1;
+  }
+
+  /* ===== HERO SECTION ===== */
+  #hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center top;
+    filter: brightness(0.55) saturate(0.8);
+  }
+
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(61,35,20,0.2) 0%,
+      rgba(61,35,20,0.1) 40%,
+      rgba(61,35,20,0.5) 80%,
+      rgba(61,35,20,0.8) 100%
+    );
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: white;
+    padding: 40px 24px;
+    animation: fadeUp 1.5s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-eyebrow {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+  }
+
+  .hero-names {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(52px, 14vw, 96px);
+    font-weight: 300;
+    line-height: 1;
+    color: white;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+  }
+
+  .hero-names .amp {
+    font-style: italic;
+    color: var(--gold);
+    font-size: 0.7em;
+  }
+
+  .hero-date {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.8);
+    margin-top: 16px;
+  }
+
+  .scroll-down {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    color: rgba(255,255,255,0.6);
+    font-size: 22px;
+    animation: bounce 2s infinite;
+    cursor: pointer;
+  }
+  @keyframes bounce {
+    0%,100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(8px); }
+  }
+
+  /* ===== KIDS PHOTO SECTION — full screen like hero ===== */
+  #kids-section {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  .kids-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center center;
+    filter: brightness(0.52) saturate(0.75);
+  }
+
+  .kids-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(30,15,5,0.45) 0%,
+      rgba(30,15,5,0.30) 35%,
+      rgba(30,15,5,0.60) 75%,
+      rgba(20,8,2,0.88) 100%
+    );
+  }
+
+  .kids-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: white;
+    padding: 40px 24px;
+    animation: fadeUp 1.5s ease both;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .section-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+    opacity: 0.9;
+  }
+
+  .kids-photo-wrap { display: none; }
+  .kids-photo-img  { display: none; }
+
+  .frame-caption {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(28px, 8vw, 52px);
+    font-style: italic;
+    font-weight: 300;
+    color: white;
+    text-align: center;
+    line-height: 1.15;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+    margin-top: 0;
+  }
+
+  .kids-date-line {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.75);
+    margin-top: 18px;
+  }
+
+  /* ===== INVITATION TEXT ===== */
+  #invitation-section {
+    padding: 70px 24px;
+    background: var(--cream);
+    text-align: center;
+  }
+
+  .ornament {
+    color: var(--caramel);
+    font-size: 28px;
+    letter-spacing: 8px;
+    margin: 16px 0;
+  }
+
+  .invite-heading {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(28px, 7vw, 44px);
+    color: var(--chocolate);
+    font-weight: 400;
+    margin-bottom: 8px;
+  }
+
+  .invite-sub {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-style: italic;
+    color: var(--caramel);
+    margin-bottom: 32px;
+  }
+
+  .invite-body {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    line-height: 1.9;
+    color: var(--coffee);
+    max-width: 360px;
+    margin: 0 auto;
+  }
+
+  .divider {
+    width: 80px;
+    height: 1px;
+    background: var(--caramel);
+    margin: 28px auto;
+  }
+
+  /* ===== SLOT MACHINE ===== */
+  #slot-section {
+    padding: 70px 24px 80px;
+    background: linear-gradient(to bottom, #f5efe6 0%, #e8ddd0 30%, #6b4c3b 65%, #3d2314 100%);
+    text-align: center;
+  }
+
+  .slot-section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    color: var(--chocolate);
+    font-style: italic;
+    margin-bottom: 8px;
+  }
+
+  .slot-section-sub {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--caramel);
+    margin-bottom: 40px;
+  }
+
+  /* Machine wrapper */
+  .slot-machine-wrapper {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0;
+    position: relative;
+    width: min(340px, 92vw);
+    margin: 0 auto;
+  }
+
+  /* ── PINK MACHINE BODY ── */
+  .slot-machine {
+    flex: 1;
+    background: linear-gradient(160deg, #f4a8be 0%, #e8829e 40%, #d96085 100%);
+    border-radius: 120px 120px 14px 14px;
+    padding: 28px 22px 28px;
+    box-shadow:
+      0 0 0 2px #c05070,
+      0 0 0 5px rgba(212,169,106,0.35),
+      0 20px 70px rgba(0,0,0,0.55),
+      inset 0 2px 0 rgba(255,255,255,0.4);
+    position: relative;
+  }
+
+  /* Inner gold border on machine — follows arch */
+  .slot-machine::before {
+    content: '';
+    position: absolute;
+    top: 8px; left: 8px; right: 0; bottom: 8px;
+    border: 1.5px solid rgba(212,169,106,0.45);
+    border-radius: 114px 114px 8px 0;
+    pointer-events: none;
+  }
+
+  /* Arch label at very top */
+  .slot-arch-label {
+    text-align: center;
+    margin-bottom: 16px;
+    margin-top: -4px;
+  }
+
+  .slot-arch-label span {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: #6b2d3a;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+
+  /* Top banner */
+  .slot-banner {
+    background: linear-gradient(90deg, #9a3050, #c04070, #d85080, #c04070, #9a3050);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 16px;
+    text-align: center;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.3), inset 0 1px rgba(255,255,255,0.15);
+    border: 1px solid rgba(212,169,106,0.35);
+  }
+
+  .slot-banner-text {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #f5d0e0;
+    text-shadow: 0 0 8px rgba(245,200,220,0.7);
+    text-transform: uppercase;
+  }
+
+  /* Top lights row */
+  .slot-lights-top {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding: 0 6px;
+  }
+
+  .slot-light {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    transition: all 0.15s;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+  }
+
+  .slot-light.gold { background: var(--gold); box-shadow: 0 0 8px var(--gold), 0 0 16px rgba(212,168,83,0.5); border-color: #f0c060; }
+  .slot-light.red  { background: #ff5533; box-shadow: 0 0 8px #ff5533, 0 0 16px rgba(255,85,51,0.5); border-color: #ff8866; }
+  .slot-light.green{ background: #44dd44; box-shadow: 0 0 8px #44dd44; border-color: #88ff88; }
+
+  /* Hearts marquee strip */
+  .slot-hearts-strip {
+    margin: 0 0 14px;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 6px;
+    height: 26px;
+    overflow: hidden;
+  }
+
+  .slot-hearts-inner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 8px;
+    height: 100%;
+    animation: scroll-hearts-slot 5s linear infinite;
+    white-space: nowrap;
+    font-size: 13px;
+    color: #6b2d3a;
+  }
+
+  @keyframes scroll-hearts-slot {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* Dark reels window — contrast against pink body */
+  .slot-window {
+    background: #1a0a12;
+    border-radius: 12px;
+    padding: 8px;
+    margin-bottom: 14px;
+    border: 3px solid #d4a96a;
+    box-shadow: inset 0 4px 20px rgba(0,0,0,0.85), 0 0 0 1px rgba(212,169,106,0.15);
+    position: relative;
+  }
+
+  /* Scanlines on window */
+  .slot-window::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px);
+    pointer-events: none;
+    z-index: 4;
+    border-radius: 10px;
+  }
+
+  /* Center highlight bar */
+  .slot-window::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 0; right: 0;
+    transform: translateY(-50%);
+    height: 40px;
+    background: rgba(212,169,106,0.06);
+    border-top: 1px solid rgba(212,169,106,0.3);
+    border-bottom: 1px solid rgba(212,169,106,0.3);
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  /* Win line highlight */
+  .win-line {
+    position: absolute;
+    left: 8px; right: 8px;
+    top: 50%;
+    height: 2px;
+    background: rgba(255,200,60,0);
+    transform: translateY(-50%);
+    transition: background 0.3s;
+    z-index: 10;
+    pointer-events: none;
+    border-radius: 1px;
+  }
+  .win-line.active {
+    background: rgba(255,200,60,0.6);
+    box-shadow: 0 0 8px rgba(255,200,60,0.8);
+  }
+
+  .slot-reels {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+  }
+
+  .reel {
+    width: 82px;
+    height: 110px;
+    background: #100810;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(212,169,106,0.2);
+  }
+
+  .reel-inner {
+    display: flex;
+    flex-direction: column;
+    will-change: transform;
+  }
+
+  .reel-item {
+    height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 34px;
+    font-weight: 700;
+    color: #f5e6c8;
+    flex-shrink: 0;
+    text-shadow: 0 0 14px rgba(212,169,106,0.8);
+    letter-spacing: 1px;
+  }
+
+  .reel-item.month {
+    font-size: 20px;
+    letter-spacing: 2px;
+  }
+
+  .reel-item.year {
+    font-size: 24px;
+  }
+
+  /* Reel overlay gradient top/bottom fade */
+  .reel::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.78) 0%,
+      transparent 28%,
+      transparent 72%,
+      rgba(0,0,0,0.78) 100%
+    );
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  /* Bottom info strip */
+  .slot-info-strip {
+    background: #1a0a12;
+    border-radius: 6px;
+    padding: 9px 12px;
+    margin-bottom: 16px;
+    border: 1px solid rgba(212,169,106,0.25);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    color: rgba(245,230,200,0.5);
+    letter-spacing: 2px;
+    text-align: center;
+  }
+
+  /* Bottom lights row */
+  .slot-lights-bottom {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 6px;
+  }
+
+  /* Slot machine base — gold/copper */
+  .slot-base {
+    background: linear-gradient(180deg, #c8784a, #a05030);
+    border-radius: 0 0 0 12px;
+    height: 22px;
+    margin: 0 -22px -28px;
+    border-top: 2px solid #d4a96a;
+  }
+
+  /* ===== LEVER ===== */
+  .lever-side {
+    width: 52px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 50px;
+    position: relative;
+  }
+
+  /* Lever track/column — pink toned */
+  .lever-track {
+    width: 14px;
+    height: 180px;
+    background: linear-gradient(90deg, #b06080, #e090a8, #b06080);
+    border-radius: 7px;
+    position: relative;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.3), inset 1px 0 2px rgba(255,255,255,0.2);
+    border: 1px solid #904060;
+  }
+
+  /* Lever arm */
+  .lever-arm {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 10px;
+    width: 10px;
+    height: 75px;
+    background: linear-gradient(90deg, #d090a8, #f0c0d0, #c080a0);
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 1px 2px 8px rgba(0,0,0,0.4);
+    transform-origin: center bottom;
+    transition: top 0.15s ease;
+    z-index: 2;
+  }
+
+  .lever-arm::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: -24px;
+    transform: translateX(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #ff8888, #dd3333 50%, #991111);
+    box-shadow: 0 3px 12px rgba(220,50,50,0.6), inset 0 1px 3px rgba(255,255,255,0.3);
+  }
+
+  .lever-arm.pulled { top: 90px; }
+
+  .lever-label {
+    margin-top: 14px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 8px;
+    letter-spacing: 1px;
+    color: rgba(240,180,200,0.7);
+    text-transform: uppercase;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+  }
+
+  /* Click area for lever */
+  .lever-click-zone {
+    position: absolute;
+    inset: 0;
+    cursor: pointer;
+    z-index: 10;
+  }
+
+  .slot-result-text {
+    color: var(--chocolate);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-style: italic;
+    margin-top: 28px;
+    min-height: 30px;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.8s;
+    text-shadow: 0 1px 8px rgba(212,168,83,0.3);
+  }
+  .slot-result-text.show { opacity: 1; }
+
+  /* ===== DETAILS / PROGRAM SECTION ===== */
+  #details-section {
+    padding: 70px 24px;
+    background: var(--light);
+  }
+
+  .details-heading {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px;
+    color: var(--chocolate);
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  .program-timeline {
+    max-width: 380px;
+    margin: 40px auto 0;
+  }
+
+  .timeline-item {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 28px;
+    align-items: flex-start;
+  }
+
+  .timeline-time {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    font-style: italic;
+    color: var(--caramel);
+    min-width: 54px;
+    padding-top: 2px;
+    text-align: right;
+  }
+
+  .timeline-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--caramel);
+    margin-top: 4px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .timeline-dot::after {
+    content: '';
+    position: absolute;
+    top: 12px;
+    left: 5px;
+    width: 2px;
+    height: 28px;
+    background: var(--beige);
+  }
+  .timeline-item:last-child .timeline-dot::after { display: none; }
+
+  .timeline-text strong {
+    display: block;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--chocolate);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+
+  .timeline-text span {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    color: var(--coffee);
+  }
+
+  /* ===== DRESSCODE ===== */
+  #dresscode-section {
+    padding: 70px 24px;
+    background: var(--cream);
+    text-align: center;
+  }
+
+  .color-palette {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 32px auto;
+    flex-wrap: wrap;
+  }
+
+  .color-swatch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .swatch-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  .swatch-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--coffee);
+  }
+
+  .dresscode-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    line-height: 1.8;
+    color: var(--coffee);
+    max-width: 360px;
+    margin: 0 auto 20px;
+  }
+
+  .dresscode-note {
+    background: linear-gradient(135deg, var(--beige), #f0e6d6);
+    border-radius: 16px;
+    padding: 20px 24px;
+    max-width: 360px;
+    margin: 20px auto;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    color: var(--coffee);
+    font-style: italic;
+    line-height: 1.7;
+  }
+
+  /* ===== LOCATION ===== */
+  #location-section {
+    padding: 70px 24px 60px;
+    background: linear-gradient(to bottom, #3d2314 0%, #6b4c3b 35%, #e8ddd0 70%, #f5efe6 100%);
+    color: var(--chocolate);
+    text-align: center;
+  }
+
+  .location-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 34px;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+
+  .location-address {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 28px;
+  }
+
+  /* Two-map layout — replaced with single map */
+  .map-preview {
+    width: 100%;
+    max-width: 400px;
+    height: 260px;
+    border-radius: 16px;
+    overflow: hidden;
+    margin: 0 auto 24px;
+    position: relative;
+    border: 2px solid rgba(212,168,83,0.45);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+  }
+
+  .map-preview::before {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border: 1px solid rgba(212,168,83,0.18);
+    border-radius: 11px;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .map-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+    filter: saturate(0.75) brightness(0.85) sepia(0.15);
+  }
+
+  .map-warm-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(61,35,20,0.1) 0%, rgba(61,35,20,0.28) 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .map-venue-label {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(61,35,20,0.92);
+    color: var(--gold);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 7px 18px;
+    border-radius: 20px;
+    border: 1px solid rgba(212,168,83,0.5);
+    white-space: nowrap;
+    z-index: 3;
+    pointer-events: none;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.4);
+  }
+
+  .map-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--chocolate);
+    color: var(--gold);
+    text-decoration: none;
+    border-radius: 50px;
+    padding: 14px 28px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    box-shadow: 0 6px 20px rgba(61,35,20,0.2);
+    transition: all 0.3s;
+    border: 1px solid rgba(212,168,83,0.3);
+  }
+  .map-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(61,35,20,0.3); }
+
+  /* ===== CALENDAR BTN ===== */
+  .calendar-section {
+    padding: 50px 24px;
+    background: var(--light);
+    text-align: center;
+  }
+
+  .calendar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    border: 2px solid var(--caramel);
+    color: var(--coffee);
+    border-radius: 50px;
+    padding: 14px 32px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+  }
+  .calendar-btn:hover {
+    background: var(--caramel);
+    color: white;
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    padding: 50px 24px 40px;
+    background: var(--chocolate);
+    text-align: center;
+    color: rgba(255,255,255,0.5);
+  }
+  footer .footer-names {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 42px;
+    color: var(--gold);
+    font-style: italic;
+    margin-bottom: 8px;
+  }
+  footer p {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+  }
+
+  /* SPARKLE ANIMATION */
+  .sparkle-container {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 999;
+    display: none;
+  }
+  .sparkle {
+    position: absolute;
+    font-size: 20px;
+    animation: sparkle-fly 2s ease-out forwards;
+  }
+  @keyframes sparkle-fly {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-100px) scale(0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- SPARKLE CONTAINER -->
+<div class="sparkle-container" id="sparkle-container"></div>
+
+<!-- LANGUAGE TOGGLE -->
+<div id="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('ru')">РУ</button>
+  <button class="lang-btn" onclick="setLang('kz')">ҚАЗ</button>
+</div>
+
+<!-- ===== ENVELOPE ===== -->
+<div id="envelope-section" onclick="openEnvelope()">
+
+  <!-- Floating decorations -->
+  <span class="env-deco" style="left:7%;top:16%;font-size:14px;animation-delay:0s;animation-duration:8s">✦</span>
+  <span class="env-deco" style="left:90%;top:20%;font-size:10px;animation-delay:2s;animation-duration:7s">✦</span>
+  <span class="env-deco" style="left:14%;top:74%;font-size:16px;animation-delay:4s;animation-duration:9s">❧</span>
+  <span class="env-deco" style="left:84%;top:70%;font-size:11px;animation-delay:1s;animation-duration:6.5s">◆</span>
+  <span class="env-deco" style="left:50%;top:9%;font-size:10px;animation-delay:3.5s;animation-duration:7.5s">✦</span>
+
+  <!-- Header -->
+  <div id="env-header">
+    <div class="env-header-sub" data-ru="Приглашение на торжество" data-kz="Той шақырымы">Приглашение на торжество</div>
+    <div class="env-header-names">Нурлан &amp; Тамила</div>
+  </div>
+
+  <!-- LAYER 1: Envelope body (back) — bottom, left, right, bottom flap -->
+  <div id="env-back">
+    <svg viewBox="0 0 800 520" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" overflow="visible">
+      <defs>
+        <linearGradient id="bodyG" x1="0" y1="0" x2="0.2" y2="1">
+          <stop offset="0%"   stop-color="#f5ece0"/>
+          <stop offset="45%"  stop-color="#eddcbf"/>
+          <stop offset="100%" stop-color="#e0cb9e"/>
+        </linearGradient>
+        <linearGradient id="leftG" x1="0" y1="0" x2="1" y2="0.4">
+          <stop offset="0%"   stop-color="#d8c49a"/>
+          <stop offset="100%" stop-color="#eddcba"/>
+        </linearGradient>
+        <linearGradient id="rightG" x1="1" y1="0" x2="0" y2="0.4">
+          <stop offset="0%"   stop-color="#cdb890"/>
+          <stop offset="100%" stop-color="#e8d4ae"/>
+        </linearGradient>
+        <linearGradient id="botG" x1="0" y1="1" x2="0.2" y2="0">
+          <stop offset="0%"   stop-color="#c8ae80"/>
+          <stop offset="100%" stop-color="#ddc89a"/>
+        </linearGradient>
+        <filter id="bodyShadow">
+          <feDropShadow dx="0" dy="14" stdDeviation="24" flood-color="#3d2314" flood-opacity="0.22"/>
+          <feDropShadow dx="0" dy="2"  stdDeviation="4"  flood-color="#8a6020" flood-opacity="0.15"/>
+        </filter>
+        <!-- Gold border gradient -->
+        <linearGradient id="goldBorderG" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"   stop-color="#d4a030"/>
+          <stop offset="40%"  stop-color="#f0c050"/>
+          <stop offset="100%" stop-color="#b87820"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Body -->
+      <rect x="30" y="100" width="740" height="400" rx="6" fill="url(#bodyG)" filter="url(#bodyShadow)"/>
+
+      <!-- Left side flap -->
+      <polygon points="30,100 30,500 420,310" fill="url(#leftG)" opacity="0.96"/>
+      <line x1="30" y1="100" x2="420" y2="310" stroke="rgba(200,170,100,0.35)" stroke-width="1.5"/>
+
+      <!-- Right side flap -->
+      <polygon points="770,100 770,500 380,310" fill="url(#rightG)" opacity="0.96"/>
+      <line x1="770" y1="100" x2="380" y2="310" stroke="rgba(180,150,80,0.3)" stroke-width="1.5"/>
+
+      <!-- Bottom flap -->
+      <polygon points="30,500 770,500 400,300" fill="url(#botG)" opacity="0.93"/>
+      <line x1="30"  y1="500" x2="400" y2="300" stroke="rgba(180,150,80,0.2)" stroke-width="1"/>
+      <line x1="770" y1="500" x2="400" y2="300" stroke="rgba(160,130,60,0.2)" stroke-width="1"/>
+
+      <!-- Outer gold border -->
+      <rect x="30" y="100" width="740" height="400" rx="6"
+            fill="none" stroke="url(#goldBorderG)" stroke-width="2.5" opacity="0.7"/>
+      <!-- Inner gold border -->
+      <rect x="44" y="114" width="712" height="372" rx="4"
+            fill="none" stroke="rgba(212,168,60,0.28)" stroke-width="1"/>
+
+      <!-- Corner ornament dots -->
+      <circle cx="52"  cy="122" r="3.5" fill="#d4a030" opacity="0.6"/>
+      <circle cx="748" cy="122" r="3.5" fill="#d4a030" opacity="0.6"/>
+      <circle cx="52"  cy="488" r="3.5" fill="#d4a030" opacity="0.6"/>
+      <circle cx="748" cy="488" r="3.5" fill="#d4a030" opacity="0.6"/>
+      <!-- Corner L-marks -->
+      <path d="M52,129 L52,144 M59,122 L74,122" stroke="rgba(180,130,20,0.45)" stroke-width="1.2" fill="none"/>
+      <path d="M748,129 L748,144 M741,122 L726,122" stroke="rgba(180,130,20,0.45)" stroke-width="1.2" fill="none"/>
+      <path d="M52,481 L52,466 M59,488 L74,488" stroke="rgba(180,130,20,0.45)" stroke-width="1.2" fill="none"/>
+      <path d="M748,481 L748,466 M741,488 L726,488" stroke="rgba(180,130,20,0.45)" stroke-width="1.2" fill="none"/>
+    </svg>
+  </div>
+
+  <!-- LAYER 2: Invitation card — z-index above flap after it opens -->
+  <div id="env-card-layer">
+    <svg viewBox="0 0 320 480" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" overflow="visible">
+      <defs>
+        <linearGradient id="cardG" x1="0" y1="0" x2="0.08" y2="1">
+          <stop offset="0%"   stop-color="#fffdf6"/>
+          <stop offset="100%" stop-color="#f9f0de"/>
+        </linearGradient>
+        <linearGradient id="cBorderG" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"   stop-color="#d4a030"/>
+          <stop offset="35%"  stop-color="#f4c84a"/>
+          <stop offset="70%"  stop-color="#c89030"/>
+          <stop offset="100%" stop-color="#e8b840"/>
+        </linearGradient>
+        <filter id="cardSh">
+          <feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#000" flood-opacity="0.35"/>
+          <feDropShadow dx="0" dy="-4" stdDeviation="8"  flood-color="#000" flood-opacity="0.2"/>
+        </filter>
+      </defs>
+
+      <!-- Card body -->
+      <rect x="10" y="10" width="300" height="460" rx="4" fill="rgba(0,0,0,0.2)" transform="translate(4,6)"/>
+      <rect x="10" y="10" width="300" height="460" rx="4" fill="url(#cardG)" filter="url(#cardSh)"/>
+
+      <!-- Gold outer border -->
+      <rect x="10" y="10" width="300" height="460" rx="4"
+            fill="none" stroke="url(#cBorderG)" stroke-width="2.2"/>
+      <!-- Inner decorative border -->
+      <rect x="20" y="20" width="280" height="440" rx="3"
+            fill="none" stroke="rgba(200,150,30,0.3)" stroke-width="0.9"/>
+      <!-- Second inner border -->
+      <rect x="26" y="26" width="268" height="428" rx="2"
+            fill="none" stroke="rgba(200,150,30,0.15)" stroke-width="0.6"/>
+
+      <!-- Corner ornament on card -->
+      <path d="M20,36 L20,20 L36,20" fill="none" stroke="#c8a030" stroke-width="1.2" opacity="0.6"/>
+      <path d="M300,36 L300,20 L284,20" fill="none" stroke="#c8a030" stroke-width="1.2" opacity="0.6"/>
+      <path d="M20,444 L20,460 L36,460" fill="none" stroke="#c8a030" stroke-width="1.2" opacity="0.6"/>
+      <path d="M300,444 L300,460 L284,460" fill="none" stroke="#c8a030" stroke-width="1.2" opacity="0.6"/>
+
+      <!-- Top ornament -->
+      <text x="160" y="66" text-anchor="middle" font-family="Cormorant Garamond, serif"
+            font-size="11" fill="#c8960a" opacity="0.75" letter-spacing="4">✦  ·  ✦  ·  ✦</text>
+
+      <!-- Нурлан -->
+      <text x="160" y="118" text-anchor="middle" font-family="Cormorant Garamond, serif"
+            font-size="32" font-style="italic" fill="#3d2314" letter-spacing="1">Нурлан</text>
+      <!-- & -->
+      <text x="160" y="148" text-anchor="middle" font-family="Cormorant Garamond, serif"
+            font-size="22" font-style="italic" fill="#c8960a">&amp;</text>
+      <!-- Тамила -->
+      <text x="160" y="192" text-anchor="middle" font-family="Cormorant Garamond, serif"
+            font-size="32" font-style="italic" fill="#3d2314" letter-spacing="1">Тамила</text>
+
+      <!-- Divider line + diamond -->
+      <line x1="60" y1="212" x2="130" y2="212" stroke="#c8960a" stroke-width="0.8" opacity="0.6"/>
+      <polygon points="160,207 166,212 160,217 154,212" fill="#c8960a" opacity="0.75"/>
+      <line x1="190" y1="212" x2="260" y2="212" stroke="#c8960a" stroke-width="0.8" opacity="0.6"/>
+
+      <!-- Date -->
+      <text x="160" y="242" text-anchor="middle" font-family="Montserrat, sans-serif"
+            font-size="11" letter-spacing="4" fill="#5a3810">15 · 08 · 2026</text>
+      <text x="160" y="264" text-anchor="middle" font-family="Montserrat, sans-serif"
+            font-size="9" letter-spacing="3" fill="#c8960a" opacity="0.8">17 : 30</text>
+
+      <!-- Heart ornament -->
+      <text x="160" y="296" text-anchor="middle" font-family="Cormorant Garamond, serif"
+            font-size="16" fill="#c8960a" opacity="0.7">— ♡ —</text>
+
+      <!-- Venue -->
+      <text x="160" y="320" text-anchor="middle" font-family="Montserrat, sans-serif"
+            font-size="7.5" letter-spacing="2.5" fill="#8a6020" opacity="0.7">MAGAUYA GRAND HALL</text>
+
+      <!-- Small ornament line -->
+      <line x1="80" y1="334" x2="240" y2="334" stroke="rgba(200,150,30,0.2)" stroke-width="0.7"/>
+
+      <!-- Алматы -->
+      <text x="160" y="354" text-anchor="middle" font-family="Montserrat, sans-serif"
+            font-size="7" letter-spacing="3" fill="#8a6020" opacity="0.5">АЛМАТЫ · КАЗАХСТАН</text>
+
+      <!-- Bottom ornament -->
+      <text x="160" y="440" text-anchor="middle" font-family="Cormorant Garamond, serif"
+            font-size="11" fill="#c8960a" opacity="0.6">✦  ·  ✦  ·  ✦</text>
+    </svg>
+  </div>
+
+  <!-- LAYER 3: Top flap — sits above card while closed, rotates back on open -->
+  <div id="env-flap-layer">
+    <svg viewBox="0 0 800 520" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" overflow="visible">
+      <defs>
+        <linearGradient id="topFlapG" x1="0" y1="0" x2="0.3" y2="1">
+          <stop offset="0%"   stop-color="#f0e4c8"/>
+          <stop offset="40%"  stop-color="#e4d4a8"/>
+          <stop offset="100%" stop-color="#d0be88"/>
+        </linearGradient>
+        <!-- Subtle sheen on flap -->
+        <linearGradient id="flapSheenG" x1="0" y1="0" x2="1" y2="0.8">
+          <stop offset="0%"   stop-color="rgba(255,245,200,0.4)"/>
+          <stop offset="35%"  stop-color="rgba(255,255,255,0.06)"/>
+          <stop offset="100%" stop-color="rgba(200,170,80,0.12)"/>
+        </linearGradient>
+        <filter id="flapDropSh">
+          <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#3d2314" flood-opacity="0.28"/>
+        </filter>
+      </defs>
+      <!-- Flap triangle -->
+      <polygon points="30,100 770,100 400,340" fill="url(#topFlapG)" filter="url(#flapDropSh)"/>
+      <!-- Sheen overlay -->
+      <polygon points="30,100 770,100 400,340" fill="url(#flapSheenG)"/>
+      <!-- Fold crease at top -->
+      <line x1="30" y1="100" x2="770" y2="100" stroke="rgba(200,170,80,0.55)" stroke-width="2"/>
+      <!-- Left edge -->
+      <line x1="30"  y1="100" x2="400" y2="340" stroke="rgba(200,170,80,0.22)" stroke-width="1.4"/>
+      <!-- Right edge -->
+      <line x1="770" y1="100" x2="400" y2="340" stroke="rgba(180,150,60,0.22)" stroke-width="1.4"/>
+      <!-- Subtle inner rays for texture -->
+      <line x1="150" y1="100" x2="400" y2="280" stroke="rgba(255,240,180,0.06)" stroke-width="0.8"/>
+      <line x1="650" y1="100" x2="400" y2="280" stroke="rgba(255,240,180,0.06)" stroke-width="0.8"/>
+      <line x1="280" y1="100" x2="400" y2="220" stroke="rgba(255,240,180,0.05)" stroke-width="0.8"/>
+      <line x1="520" y1="100" x2="400" y2="220" stroke="rgba(255,240,180,0.05)" stroke-width="0.8"/>
+    </svg>
+  </div>
+
+  <!-- LAYER 4: Wax seal — on top of flap, centred at fold line -->
+  <div id="env-seal-layer">
+    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+      <defs>
+        <radialGradient id="waxG" cx="36%" cy="30%" r="68%">
+          <stop offset="0%"   stop-color="#c0404e"/>
+          <stop offset="35%"  stop-color="#8c1828"/>
+          <stop offset="70%"  stop-color="#5e0c18"/>
+          <stop offset="100%" stop-color="#380608"/>
+        </radialGradient>
+        <radialGradient id="waxSheenG" cx="34%" cy="26%" r="48%">
+          <stop offset="0%"   stop-color="rgba(255,180,190,0.42)"/>
+          <stop offset="100%" stop-color="rgba(255,120,140,0)"/>
+        </radialGradient>
+        <linearGradient id="goldRingG" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"   stop-color="#f0c040"/>
+          <stop offset="25%"  stop-color="#fff4a0"/>
+          <stop offset="55%"  stop-color="#d09820"/>
+          <stop offset="80%"  stop-color="#f8d860"/>
+          <stop offset="100%" stop-color="#c88020"/>
+        </linearGradient>
+        <filter id="sealShadow">
+          <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#700010" flood-opacity="0.55"/>
+          <feDropShadow dx="2" dy="5" stdDeviation="6"  flood-color="#000000" flood-opacity="0.45"/>
+        </filter>
+      </defs>
+
+      <!-- Outer drop shadow -->
+      <ellipse cx="62" cy="65" rx="50" ry="48" fill="rgba(0,0,0,0.35)"/>
+
+      <!-- Outer gold ring -->
+      <circle cx="60" cy="60" r="52" fill="none" stroke="url(#goldRingG)" stroke-width="5.5"/>
+      <!-- Thin inner gold ring -->
+      <circle cx="60" cy="60" r="46" fill="none" stroke="rgba(255,220,80,0.28)" stroke-width="1"/>
+
+      <!-- Wax disc -->
+      <circle cx="60" cy="60" r="44" fill="url(#waxG)" filter="url(#sealShadow)"/>
+      <!-- Sheen -->
+      <circle cx="60" cy="60" r="44" fill="url(#waxSheenG)"/>
+
+      <!-- Embossed grooves -->
+      <circle cx="60" cy="60" r="38" fill="none" stroke="rgba(255,160,170,0.16)" stroke-width="1.2"/>
+      <circle cx="60" cy="60" r="28" fill="none" stroke="rgba(255,160,170,0.12)" stroke-width="0.9"/>
+
+      <!-- 8-point star etching -->
+      <g stroke="rgba(255,190,200,0.2)" stroke-width="0.9" fill="none">
+        <line x1="60" y1="22" x2="60" y2="98"/>
+        <line x1="22" y1="60" x2="98" y2="60"/>
+        <line x1="33" y1="33" x2="87" y2="87"/>
+        <line x1="87" y1="33" x2="33" y2="87"/>
+      </g>
+
+      <!-- Monogram N ♡ T -->
+      <text x="60" y="55" text-anchor="middle"
+            font-family="Cormorant Garamond, serif" font-size="15"
+            font-style="italic" letter-spacing="3"
+            fill="rgba(255,235,240,0.94)">N ♡ T</text>
+      <!-- Year -->
+      <text x="60" y="72" text-anchor="middle"
+            font-family="Montserrat, sans-serif" font-size="7.5"
+            letter-spacing="3" fill="rgba(255,210,218,0.65)">2026</text>
+
+      <!-- Top shimmer arc on gold ring -->
+      <path d="M 28,38 A 38,38 0 0,1 92,38"
+            fill="none" stroke="rgba(255,252,180,0.6)" stroke-width="2.5"
+            stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <p id="tap-hint" data-ru="Нажмите, чтобы открыть ✦" data-kz="Ашу үшін басыңыз ✦">Нажмите, чтобы открыть ✦</p>
+</div>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div id="main-content">
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-bg" id="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow" data-ru="ПРИГЛАШЕНИЕ НА ТОРЖЕСТВО" data-kz="ТОЙ ШАҚЫРЫМЫ">ПРИГЛАШЕНИЕ НА ТОРЖЕСТВО</p>
+      <div class="hero-names">
+        Нурлан<br><span class="amp">&</span><br>Тамила
+      </div>
+      <p class="hero-date">15 · 08 · 2026</p>
+    </div>
+    <div class="scroll-down" onclick="document.getElementById('kids-section').scrollIntoView({behavior:'smooth'})">↓</div>
+  </section>
+
+  <!-- KIDS SECTION -->
+  <section id="kids-section">
+    <div class="kids-bg" id="kids-bg"></div>
+    <div class="kids-overlay"></div>
+    <div class="kids-content">
+      <p class="section-label" data-ru="МЫ ЗНАЕМ ДРУГ ДРУГА ДАВНО..." data-kz="БІЗ БІРІМІЗДІ ЕРТЕДЕН БІЛЕМІЗ...">МЫ ЗНАЕМ ДРУГ ДРУГА ДАВНО...</p>
+      <p class="frame-caption" data-ru="Вместе с самого начала..." data-kz="Басынан бірге...">Вместе с самого начала...</p>
+      <p class="kids-date-line">15 · 08 · 2026</p>
+    </div>
+    <!-- hidden img kept for JS compatibility -->
+    <img id="kids-photo" src="" alt="" style="display:none;">
+  </section>
+
+  <!-- INVITATION TEXT -->
+  <section id="invitation-section">
+    <p class="ornament">✦ ✦ ✦</p>
+    <h2 class="invite-heading" data-ru="Дорогие гости" data-kz="Қымбатты қонақтар">Дорогие гости</h2>
+    <p class="invite-sub" data-ru="С радостью приглашаем вас разделить с нами этот особенный день" data-kz="Бұл ерекше күнді бізбен бірге тойлауға шақырамыз">С радостью приглашаем вас разделить с нами этот особенный день</p>
+    <div class="divider"></div>
+    <p class="invite-body" id="invite-body-text">Мы счастливы сообщить, что 15 августа 2026 года состоится наше свадебное торжество. В этот день мы хотим, чтобы рядом были самые близкие и любимые люди — те, кто был с нами всегда. Ваше присутствие сделает этот вечер по-настоящему незабываемым и наполнит его теплом.</p>
+    <p class="ornament" style="margin-top:24px;">— ♡ —</p>
+  </section>
+
+  <!-- SLOT MACHINE SECTION -->
+  <section id="slot-section">
+    <p class="slot-section-title" data-ru="Запомните эту дату!" data-kz="Бұл күнді есте сақтаңыз!">Запомните эту дату!</p>
+    <p class="slot-section-sub" data-ru="ДЕРНИТЕ ЗА РЫЧАГ" data-kz="ТҰТҚАНЫ ТАРТЫҢЫЗ">ДЕРНИТЕ ЗА РЫЧАГ</p>
+
+    <div class="slot-machine-wrapper">
+      <!-- MAIN MACHINE BODY -->
+      <div class="slot-machine">
+
+        <!-- Arch label at top -->
+        <div class="slot-arch-label">
+          <span>★ SAVE THE DATE ★</span>
+        </div>
+
+        <div class="slot-banner">
+          <div class="slot-banner-text">♠ JACKPOT DATE ♠</div>
+        </div>
+
+        <div class="slot-lights-top" id="slot-lights-top">
+          <div class="slot-light"></div>
+          <div class="slot-light"></div>
+          <div class="slot-light"></div>
+          <div class="slot-light"></div>
+          <div class="slot-light"></div>
+          <div class="slot-light"></div>
+          <div class="slot-light"></div>
+        </div>
+
+        <!-- Hearts marquee strip -->
+        <div class="slot-hearts-strip">
+          <div class="slot-hearts-inner">
+            <span>♥</span><span>♠</span><span>♥</span><span>♣</span><span>♥</span><span>♦</span><span>♥</span><span>♠</span><span>♥</span><span>♣</span><span>♥</span><span>♦</span>
+            <span>♥</span><span>♠</span><span>♥</span><span>♣</span><span>♥</span><span>♦</span><span>♥</span><span>♠</span><span>♥</span><span>♣</span><span>♥</span><span>♦</span>
+          </div>
+        </div>
+
+        <div class="slot-window">
+          <div class="win-line" id="win-line"></div>
+          <div class="slot-reels">
+            <!-- Reel 1: Day -->
+            <div class="reel">
+              <div class="reel-inner" id="reel1">
+                <div class="reel-item">07</div>
+                <div class="reel-item">22</div>
+                <div class="reel-item">30</div>
+                <div class="reel-item">11</div>
+                <div class="reel-item">05</div>
+                <div class="reel-item">28</div>
+                <div class="reel-item">15</div>
+              </div>
+            </div>
+            <!-- Reel 2: Month -->
+            <div class="reel">
+              <div class="reel-inner" id="reel2">
+                <div class="reel-item month">МАЙ</div>
+                <div class="reel-item month">ДЕК</div>
+                <div class="reel-item month">МАР</div>
+                <div class="reel-item month">НОЯ</div>
+                <div class="reel-item month">ИЮН</div>
+                <div class="reel-item month">ЯНВ</div>
+                <div class="reel-item month">АВГ</div>
+              </div>
+            </div>
+            <!-- Reel 3: Year -->
+            <div class="reel">
+              <div class="reel-inner" id="reel3">
+                <div class="reel-item year">2024</div>
+                <div class="reel-item year">2027</div>
+                <div class="reel-item year">2023</div>
+                <div class="reel-item year">2028</div>
+                <div class="reel-item year">2025</div>
+                <div class="reel-item year">2029</div>
+                <div class="reel-item year">2026</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="slot-info-strip" id="slot-info-strip" data-ru="17:30 · MAGAUYA GRAND HALL" data-kz="17:30 · MAGAUYA GRAND HALL">17:30 · MAGAUYA GRAND HALL</div>
+
+        <div class="slot-lights-bottom" id="slot-lights-bottom">
+          <div class="slot-light"></div>
+          <div class="slot-light"></div>
+          <div class="slot-light"></div>
+          <div class="slot-light"></div>
+          <div class="slot-light"></div>
+          <div class="slot-light"></div>
+          <div class="slot-light"></div>
+        </div>
+
+        <div class="slot-base"></div>
+      </div>
+
+      <!-- LEVER SIDE -->
+      <div class="lever-side" id="lever-side">
+        <div class="lever-track">
+          <div class="lever-arm" id="lever-arm"></div>
+        </div>
+        <div class="lever-label" data-ru="УДАЧИ" data-kz="СӘТТІЛІК">УДАЧИ</div>
+        <div class="lever-click-zone" id="lever-click" onclick="pullLever()"></div>
+      </div>
+    </div>
+
+    <p class="slot-result-text" id="slot-result"></p>
+  </section>
+
+  <!-- PROGRAM -->
+  <section id="details-section">
+    <h2 class="details-heading" data-ru="Программа вечера" data-kz="Кеш бағдарламасы">Программа вечера</h2>
+    <p class="ornament" style="font-size:16px;">✦</p>
+
+    <div class="program-timeline">
+      <div class="timeline-item">
+        <div class="timeline-time">17:30</div>
+        <div class="timeline-dot"></div>
+        <div class="timeline-text">
+          <strong data-ru="СБОР ГОСТЕЙ" data-kz="ҚОНАҚТАРДЫ ҚАРСЫ АЛУ">СБОР ГОСТЕЙ</strong>
+          <span data-ru="Торжественная встреча и приветствие" data-kz="Салтанатты кездесу және қарсы алу">Торжественная встреча и приветствие</span>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-time">18:00</div>
+        <div class="timeline-dot"></div>
+        <div class="timeline-text">
+          <strong data-ru="ЦЕРЕМОНИЯ" data-kz="САЛТАНАТТЫ РЕТ">ЦЕРЕМОНИЯ</strong>
+          <span data-ru="Торжественная регистрация и клятвы" data-kz="Некені тіркеу және ант беру">Торжественная регистрация и клятвы</span>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-time">19:00</div>
+        <div class="timeline-dot"></div>
+        <div class="timeline-text">
+          <strong data-ru="БАНКЕТ" data-kz="БАНКЕТ">БАНКЕТ</strong>
+          <span data-ru="Праздничный ужин с живой музыкой" data-kz="Тірі музыкамен мерекелік кеш">Праздничный ужин с живой музыкой</span>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-time">20:30</div>
+        <div class="timeline-dot"></div>
+        <div class="timeline-text">
+          <strong data-ru="ПЕРВЫЙ ТАНЕЦ" data-kz="БІРІНШІ БИ">ПЕРВЫЙ ТАНЕЦ</strong>
+          <span data-ru="Волшебный момент для молодожёнов" data-kz="Жаңа жұп үшін сиқырлы сәт">Волшебный момент для молодожёнов</span>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-time">21:00</div>
+        <div class="timeline-dot"></div>
+        <div class="timeline-text">
+          <strong data-ru="ТОРЖЕСТВО" data-kz="МЕРЕКЕ">ТОРЖЕСТВО</strong>
+          <span data-ru="Танцы, тосты и незабываемые моменты" data-kz="Биге шығу, тостар және ұмытылмас сәттер">Танцы, тосты и незабываемые моменты</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DRESSCODE -->
+  <section id="dresscode-section">
+    <p class="section-label" data-ru="ДРЕСС-КОД" data-kz="КИІНУ КОДЫ">ДРЕСС-КОД</p>
+    <h2 class="details-heading" data-ru="Тёплая элегантность" data-kz="Жылы элегантность">Тёплая элегантность</h2>
+
+    <div class="color-palette">
+      <div class="color-swatch">
+        <div class="swatch-circle" style="background:#6b4c3b;"></div>
+        <span class="swatch-label" data-ru="Кофе" data-kz="Кофе">Кофе</span>
+      </div>
+      <div class="color-swatch">
+        <div class="swatch-circle" style="background:#3d2314;"></div>
+        <span class="swatch-label" data-ru="Шоко" data-kz="Шоко">Шоко</span>
+      </div>
+      <div class="color-swatch">
+        <div class="swatch-circle" style="background:#c19a6b;"></div>
+        <span class="swatch-label" data-ru="Карамель" data-kz="Карамель">Карамель</span>
+      </div>
+      <div class="color-swatch">
+        <div class="swatch-circle" style="background:#e8d5b7;"></div>
+        <span class="swatch-label" data-ru="Бежевый" data-kz="Бежевый">Бежевый</span>
+      </div>
+      <div class="color-swatch">
+        <div class="swatch-circle" style="background:#d4a853;"></div>
+        <span class="swatch-label" data-ru="Золото" data-kz="Алтын">Золото</span>
+      </div>
+    </div>
+
+    <p class="dresscode-text" data-ru="Нам будет особенно приятно, если вы поддержите атмосферу нашего вечера в тёплых оттенках кофейного, шоколадного, карамельного, бежевого и золотого цветов." data-kz="Егер сіздер кофе, шоколад, карамель, бежевый және алтын реңктерінде кешіміздің атмосферасын қолдасаңыздар, бізге ерекше жағымды болады.">Нам будет особенно приятно, если вы поддержите атмосферу нашего вечера в тёплых оттенках кофейного, шоколадного, карамельного, бежевого и золотого цветов.</p>
+
+    <div class="dresscode-note" data-ru="Для мужчин — классические костюмы в спокойной элегантной палитре. Белый цвет мы с любовью оставляем только для невесты 🤍" data-kz="Ерлер үшін — тыныш элегантты палитрадағы классикалық костюмдер. Ақ түсті сүйіспеншілікпен тек келіншекке қалдырамыз 🤍">Для мужчин — классические костюмы в спокойной элегантной палитре. Белый цвет мы с любовью оставляем только для невесты 🤍</div>
+
+    <div class="dresscode-note" data-ru="Мы обожаем детей 💛 Но этот вечер мы создаём как пространство для отдыха и лёгкости — для взрослых. Просим с пониманием оставить малышей дома, чтобы каждый гость мог насладиться праздником в полной мере." data-kz="Біз балаларды сүйеміз 💛 Бірақ бұл кешті ересектер үшін демалыс және жеңілдік кеңістігі ретінде жасаймыз. Ұсақтарды үйде қалдыруды сұраймыз, осылайша әрбір қонақ мерекеден толық ләззат ала алады.">Мы обожаем детей 💛 Но этот вечер мы создаём как пространство для отдыха и лёгкости — для взрослых. Просим с пониманием оставить малышей дома, чтобы каждый гость мог насладиться праздником в полной мере.</div>
+  </section>
+
+  <!-- LOCATION -->
+  <section id="location-section">
+    <p class="section-label" style="color:rgba(212,168,83,0.7);" data-ru="МЕСТО ПРОВЕДЕНИЯ" data-kz="ОЙ ӨТУ ОРНЫ">МЕСТО ПРОВЕДЕНИЯ</p>
+    <h2 class="location-name">Magauya Grand Hall</h2>
+    <p class="location-address" data-ru="Алматы, Казахстан" data-kz="Алматы, Қазақстан">Алматы, Казахстан</p>
+
+    <div class="map-preview">
+      <svg width="100%" height="100%" viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+
+        <!-- ── LIGHT BASE (steppe / terrain) ── -->
+        <rect width="400" height="280" fill="#e8e2d8"/>
+
+        <!-- ── TERRAIN PATCHES (как на 2ГИС — тёмные массивы леса/горы) ── -->
+        <!-- Top-left dark terrain -->
+        <path d="M0,0 L80,0 L90,30 L60,60 L30,80 L0,70 Z" fill="#d0c8b8"/>
+        <path d="M0,0 L45,0 L50,25 L20,45 L0,40 Z" fill="#c8c0b0"/>
+        <!-- Top center forest -->
+        <path d="M130,0 L200,0 L210,20 L180,50 L150,40 L120,20 Z" fill="#cfc8b8"/>
+        <!-- Right side terrain -->
+        <path d="M320,0 L400,0 L400,60 L370,80 L340,50 L310,20 Z" fill="#d0c8b8"/>
+        <!-- Bottom terrain patches -->
+        <path d="M0,200 L60,180 L80,210 L50,240 L0,250 Z" fill="#ccc4b4"/>
+        <path d="M200,220 L280,200 L320,230 L300,270 L220,280 L180,260 Z" fill="#ccc4b4"/>
+        <path d="M340,240 L400,220 L400,280 L340,280 Z" fill="#c8c0b0"/>
+        <!-- Mid terrain -->
+        <path d="M0,100 L40,90 L60,110 L40,140 L0,150 Z" fill="#d4ccbc"/>
+        <path d="M350,100 L400,90 L400,160 L360,150 Z" fill="#d4ccbc"/>
+
+        <!-- ── MAIN DIAGONAL ROAD (Алатауская трасса — top-right diagonal) ── -->
+        <line x1="260" y1="0" x2="400" y2="120" stroke="#f5f0e5" stroke-width="7"/>
+        <line x1="260" y1="0" x2="400" y2="120" stroke="#e8c87a" stroke-width="1" stroke-dasharray="8,6" opacity="0.6"/>
+        <!-- Road shoulder lines -->
+        <line x1="255" y1="0" x2="395" y2="120" stroke="rgba(180,150,80,0.3)" stroke-width="1"/>
+        <line x1="265" y1="0" x2="405" y2="120" stroke="rgba(180,150,80,0.3)" stroke-width="1"/>
+
+        <!-- ── БУХТАРМИНСКАЯ — big X crossing (main feature of this map) ── -->
+        <!-- NW to SE diagonal -->
+        <line x1="0" y1="100" x2="240" y2="260" stroke="#f5f0e5" stroke-width="9"/>
+        <line x1="0" y1="100" x2="240" y2="260" stroke="#e8c87a" stroke-width="1.2" stroke-dasharray="10,7" opacity="0.5"/>
+        <line x1="-5" y1="96" x2="235" y2="256" stroke="rgba(160,130,60,0.25)" stroke-width="1"/>
+        <line x1="5" y1="104" x2="245" y2="264" stroke="rgba(160,130,60,0.25)" stroke-width="1"/>
+
+        <!-- NE to SW diagonal (Бухтарминская continuation) -->
+        <line x1="110" y1="0" x2="400" y2="220" stroke="#f5f0e5" stroke-width="9"/>
+        <line x1="110" y1="0" x2="400" y2="220" stroke="#e8c87a" stroke-width="1.2" stroke-dasharray="10,7" opacity="0.5"/>
+        <line x1="105" y1="0" x2="395" y2="220" stroke="rgba(160,130,60,0.25)" stroke-width="1"/>
+        <line x1="115" y1="0" x2="405" y2="220" stroke="rgba(160,130,60,0.25)" stroke-width="1"/>
+
+        <!-- ── РАЙЫМБЕК БАТЫРА — horizontal road ── -->
+        <line x1="120" y1="200" x2="400" y2="185" stroke="#f0ebe0" stroke-width="6"/>
+        <line x1="120" y1="200" x2="400" y2="185" stroke="#e8c87a" stroke-width="0.8" stroke-dasharray="8,6" opacity="0.4"/>
+
+        <!-- ── Secondary roads ── -->
+        <!-- Left vertical (Лавренева / Проспект) -->
+        <line x1="45" y1="0" x2="40" y2="180" stroke="#ece6d8" stroke-width="4"/>
+        <!-- Small roads -->
+        <line x1="0" y1="165" x2="130" y2="155" stroke="#e8e2d4" stroke-width="3"/>
+        <line x1="280" y1="90" x2="400" y2="80" stroke="#e8e2d4" stroke-width="3"/>
+        <line x1="310" y1="160" x2="400" y2="155" stroke="#e5dfd2" stroke-width="2.5"/>
+        <line x1="160" y1="230" x2="320" y2="245" stroke="#e5dfd2" stroke-width="2.5"/>
+        <line x1="0" y1="230" x2="80" y2="235" stroke="#e5dfd2" stroke-width="2.5"/>
+
+        <!-- ── INTERSECTION HIGHLIGHT (X crossing) ── -->
+        <circle cx="155" cy="175" r="10" fill="#ede8dc" stroke="#d4c89a" stroke-width="1.5"/>
+        <circle cx="155" cy="175" r="4" fill="#d4c48a"/>
+
+        <!-- Второй перекрёсток -->
+        <circle cx="260" cy="220" r="7" fill="#ede8dc" stroke="#d4c89a" stroke-width="1"/>
+
+        <!-- ── ROAD LABELS ── -->
+        <!-- Бухтарминская NW-SE -->
+        <text font-family="Arial,sans-serif" font-size="9" fill="#8a7a5a" letter-spacing="0.3" transform="rotate(46,60,148)">
+          <textPath>
+          </textPath>
+        </text>
+        <text x="28" y="148" font-family="Arial,sans-serif" font-size="8" fill="#7a6a4a" transform="rotate(47,28,148)" letter-spacing="0.2">Бухтарминская</text>
+        <!-- Бухтарминская NE-SW -->
+        <text x="145" y="42" font-family="Arial,sans-serif" font-size="8" fill="#7a6a4a" transform="rotate(32,145,42)" letter-spacing="0.2">Бухтарминская</text>
+        <!-- Алатауская трасса -->
+        <text x="298" y="42" font-family="Arial,sans-serif" font-size="8" fill="#7a6a4a" transform="rotate(37,298,42)" letter-spacing="0.2">Алатауская трасса</text>
+        <!-- Райымбек батыра -->
+        <text x="200" y="196" font-family="Arial,sans-serif" font-size="8" fill="#7a6a4a" letter-spacing="0.2">Райымбек батыра</text>
+
+        <!-- ── LOCALITY LABELS ── -->
+        <text x="390" y="260" text-anchor="end" font-family="Arial,sans-serif" font-size="9" fill="#6a5a3a" opacity="0.8">Гульдала</text>
+        <text x="290" y="265" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="#6a5a3a" opacity="0.75">Бесагаш</text>
+        <text x="50" y="270" font-family="Arial,sans-serif" font-size="8" fill="#6a5a3a" opacity="0.7">Бесагаш</text>
+        <text x="52" y="108" font-family="Arial,sans-serif" font-size="8.5" fill="#6a5a3a" opacity="0.7">ALA ✈</text>
+
+        <!-- ── WARM SEPIA OVERLAY ── -->
+        <rect width="400" height="280" fill="rgba(61,35,20,0.10)"/>
+
+        <!-- ── VENUE AREA HIGHLIGHT ── -->
+        <circle cx="205" cy="148" r="22" fill="rgba(212,168,83,0.15)" stroke="rgba(212,168,83,0.5)" stroke-width="1.8"/>
+        <circle cx="205" cy="148" r="11" fill="rgba(212,168,83,0.10)" stroke="rgba(212,168,83,0.35)" stroke-width="1"/>
+
+        <!-- ── PIN ── -->
+        <ellipse cx="205" cy="172" rx="8" ry="3" fill="rgba(0,0,0,0.2)"/>
+        <path d="M205,126 C195,126 187,134 187,144 C187,158 205,175 205,175 C205,175 223,158 223,144 C223,134 215,126 205,126 Z" fill="#dd2222"/>
+        <path d="M205,126 C195,126 187,134 187,144 C187,158 205,175 205,175 C205,175 223,158 223,144 C223,134 215,126 205,126 Z" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+        <circle cx="205" cy="144" r="7" fill="white" opacity="0.95"/>
+        <circle cx="205" cy="144" r="4" fill="#dd2222"/>
+        <circle cx="202" cy="140" r="2.5" fill="rgba(255,255,255,0.65)"/>
+
+        <!-- ── LABEL BUBBLE ── -->
+        <rect x="137" y="100" width="136" height="22" rx="11" fill="rgba(35,15,5,0.90)" stroke="rgba(212,168,83,0.75)" stroke-width="1.5"/>
+        <text x="205" y="115" text-anchor="middle" font-family="Montserrat,Arial,sans-serif" font-size="8.5" font-weight="700" fill="#d4a853" letter-spacing="1">MAGAUYA GRAND HALL</text>
+
+      </svg>
+      <div class="map-venue-label">📍 Magauya Grand Hall · Алматы</div>
+    </div>
+
+    <a href="https://2gis.kz/almaty/geo/70000001111187725" target="_blank" class="map-btn">
+      📍 <span data-ru="Открыть на карте" data-kz="Картада ашу">Открыть на карте</span>
+    </a>
+  </section>
+
+  <!-- CALENDAR -->
+  <div class="calendar-section">
+    <p style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--coffee);margin-bottom:24px;" data-ru="Сохраните дату" data-kz="Күнді сақтаңыз">Сохраните дату</p>
+    <a href="#" class="calendar-btn" onclick="addToCalendar(); return false;">
+      📅 <span data-ru="Добавить в календарь" data-kz="Күнтізбеге қосу">Добавить в календарь</span>
+    </a>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-names">Нурлан & Тамила</div>
+    <p data-ru="С любовью ждём вас · 15.08.2026" data-kz="Сізді сүйіспеншілікпен күтеміз · 15.08.2026">С любовью ждём вас · 15.08.2026</p>
+    <div style="margin-top:24px;font-size:18px;opacity:0.4;">✦ ✦ ✦</div>
+  </footer>
+
+</div><!-- /main-content -->
+
+<!-- Hidden audio -->
+<audio id="bg-music" loop>
+  <source src="assets/asset_0.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+// ===== IMAGES =====
+const WEDDING_IMG = 'assets/asset_1.jpg';
+const KIDS_IMG = 'assets/asset_2.jpg';
+
+document.getElementById('hero-bg').style.backgroundImage = `url('${WEDDING_IMG}')`;
+document.getElementById('kids-photo').src = KIDS_IMG;
+const kidsBg = document.getElementById('kids-bg');
+if (kidsBg) kidsBg.style.backgroundImage = `url('${KIDS_IMG}')`;
+
+// ===== LANGUAGE =====
+let currentLang = 'ru';
+
+const inviteTexts = {
+  ru: 'Мы счастливы сообщить, что 15 августа 2026 года состоится наше свадебное торжество. В этот день мы хотим, чтобы рядом были самые близкие и любимые люди — те, кто был с нами всегда. Ваше присутствие сделает этот вечер по-настоящему незабываемым и наполнит его теплом.',
+  kz: '2026 жылдың 15 тамызында біздің үйлену тойымыз өтеді. Бұл күні жанымызда ең жақын және сүйікті адамдар болғанын қалаймыз — бізбен бірге болған адамдар. Сіздің қатысуыңыз бұл кешті шынымен ұмытылмастай және жылы етеді.'
+};
+
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.remove('active');
+    if ((lang === 'ru' && b.textContent === 'РУ') || (lang === 'kz' && b.textContent === 'ҚАЗ')) {
+      b.classList.add('active');
+    }
+  });
+  document.querySelectorAll('[data-' + lang + ']').forEach(el => {
+    const txt = el.getAttribute('data-' + lang);
+    if (txt !== null) el.textContent = txt;
+  });
+  const inviteBody = document.getElementById('invite-body-text');
+  if (inviteBody) inviteBody.textContent = inviteTexts[lang];
+  const monthsRu = ['МАЙ','ДЕК','МАР','НОЯ','ИЮН','ЯНВ','АВГ'];
+  const monthsKz = ['МАМ','ЖЕЛ','НАУ','ҚАЗ','МАУ','ЖАН','ТАМ'];
+  document.querySelectorAll('#reel2 .reel-item').forEach((el, i) => {
+    el.textContent = lang === 'kz' ? monthsKz[i] : monthsRu[i];
+  });
+  if (slotSpun) {
+    document.getElementById('slot-result').textContent = lang === 'kz'
+      ? '🎉 Джекпот! 15 Тамыз 2026 · 17:30'
+      : '🎉 Джекпот! 15 Августа 2026 · 17:30';
+  }
+}
+
+// ===== ENVELOPE =====
+let envelopeOpened = false;
+
+function openEnvelope() {
+  if (envelopeOpened) return;
+  envelopeOpened = true;
+
+  const seal     = document.getElementById('env-seal-layer');
+  const flap     = document.getElementById('env-flap-layer');
+  const card     = document.getElementById('env-card-layer');
+  const hint     = document.getElementById('tap-hint');
+  const svgWrap  = document.getElementById('env-svg-wrap'); // may not exist now
+
+  hint.style.opacity = '0';
+
+  // Step 1: Seal fades away
+  setTimeout(() => {
+    seal.classList.add('hidden');
+  }, 100);
+
+  // Step 2: Flap opens — rotate it backwards around its top edge.
+  // Because the element is centred with translate(-50%,-50%), we need
+  // to set perspective on the parent and use a CSS trick.
+  setTimeout(() => {
+    // Set perspective on the envelope section
+    const envSection = document.getElementById('envelope-section');
+    envSection.style.perspective = '1400px';
+
+    // The flap element is centred. To rotate around its TOP edge we:
+    // translate up so pivot is at top of flap, rotate, the element flips back
+    flap.style.transformOrigin = 'center top';
+    // Current transform is translate(-50%,-50%). We override with a combined transform.
+    // Move the element so its top edge is at the rotation pivot (centre of screen)
+    // then rotate around that point.
+    const flapH = flap.offsetHeight;
+    flap.style.transition = 'transform 1.25s cubic-bezier(0.4, 0, 0.15, 1)';
+    flap.style.transform  = `translateX(-50%) translateY(-50%) rotateX(-192deg)`;
+  }, 350);
+
+  // Step 3: Card becomes visible and z-index goes ABOVE flap
+  setTimeout(() => {
+    card.style.zIndex = '40';
+    card.classList.add('visible'); // fade in card
+  }, 750);
+
+  // Step 4: Card rises up out of envelope (slight delay after becoming visible)
+  setTimeout(() => {
+    card.classList.add('risen');
+  }, 850);
+
+  // Step 5: Transition to main content
+  setTimeout(() => {
+    showMainContent();
+  }, 2800);
+}
+
+function showMainContent() {
+  const envSection = document.getElementById('envelope-section');
+  const mainContent = document.getElementById('main-content');
+
+  // Dramatic: envelope section scales up and fades away
+  envSection.style.transition = 'opacity 1s ease, transform 1s ease';
+  envSection.style.opacity = '0';
+  envSection.style.transform = 'scale(1.06)';
+
+  setTimeout(() => {
+    envSection.style.display = 'none';
+    mainContent.style.display = 'block';
+    setTimeout(() => mainContent.classList.add('visible'), 30);
+    startMusic();
+  }, 1000);
+}
+
+// ===== MUSIC =====
+function startMusic() {
+  const audio = document.getElementById('bg-music');
+  audio.volume = 0;
+  const p = audio.play();
+  if (p !== undefined) {
+    p.then(() => {
+      let v = 0;
+      const fade = setInterval(() => {
+        v = Math.min(v + 0.015, 0.28);
+        audio.volume = v;
+        if (v >= 0.28) clearInterval(fade);
+      }, 120);
+    }).catch(() => { showMusicBtn(); });
+  }
+}
+
+function showMusicBtn() {
+  const btn = document.createElement('div');
+  btn.innerHTML = '♪';
+  btn.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;width:44px;height:44px;border-radius:50%;background:rgba(212,168,83,0.9);color:#3d2314;font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.3);';
+  btn.onclick = () => {
+    document.getElementById('bg-music').play().then(() => {
+      document.getElementById('bg-music').volume = 0.28;
+      btn.innerHTML = '♫';
+      btn.style.opacity = '0.5';
+    });
+  };
+  document.body.appendChild(btn);
+}
+
+// ===== SLOT MACHINE =====
+let slotSpun = false;
+let leverPulling = false;
+
+function pullLever() {
+  if (leverPulling || slotSpun) return;
+  leverPulling = true;
+  const arm = document.getElementById('lever-arm');
+  arm.style.transition = 'top 0.18s cubic-bezier(0.4,0,1,1)';
+  arm.style.top = '78px';
+  setTimeout(() => {
+    arm.style.transition = 'top 0.35s cubic-bezier(0.2,1,0.3,1)';
+    arm.style.top = '10px';
+  }, 280);
+  setTimeout(startSlotSpin, 350);
+}
+
+function startSlotSpin() {
+  const lightsTop = document.querySelectorAll('#slot-lights-top .slot-light');
+  const lightsBot = document.querySelectorAll('#slot-lights-bottom .slot-light');
+  const allLights = [...lightsTop, ...lightsBot];
+  let lightTick = 0;
+  const lightInterval = setInterval(() => {
+    allLights.forEach((l, i) => {
+      l.classList.remove('gold', 'red', 'green');
+      const p = (lightTick + i) % 3;
+      if (p === 0) l.classList.add('gold');
+      else if (p === 1) l.classList.add('red');
+    });
+    lightTick++;
+  }, 100);
+
+  const ITEM_H = 110;
+  const reelIds = ['reel1', 'reel2', 'reel3'];
+  const stopDelays = [1500, 2100, 2700];
+
+  reelIds.forEach((id, idx) => {
+    const inner = document.getElementById(id);
+    const totalItems = inner.children.length;
+    let pos = 0;
+    const speed = 20 + idx * 4;
+    const interval = setInterval(() => {
+      pos -= speed;
+      if (pos <= -(ITEM_H * totalItems)) pos += ITEM_H * totalItems;
+      inner.style.transform = `translateY(${pos}px)`;
+    }, 16);
+
+    setTimeout(() => {
+      clearInterval(interval);
+      const targetPos = -(ITEM_H * 6);
+      inner.style.transition = 'transform 0.65s cubic-bezier(0.15,1,0.3,1)';
+      inner.style.transform = `translateY(${targetPos}px)`;
+      setTimeout(() => { inner.style.transition = ''; }, 700);
+      if (idx === 2) setTimeout(() => onJackpot(lightInterval, allLights), 700);
+    }, stopDelays[idx]);
+  });
+}
+
+function onJackpot(lightInterval, allLights) {
+  clearInterval(lightInterval);
+  slotSpun = true;
+  let fc = 0;
+  const flash = setInterval(() => {
+    allLights.forEach(l => {
+      l.classList.remove('gold','red','green');
+      l.classList.add(fc % 2 === 0 ? 'gold' : 'green');
+    });
+    if (++fc > 10) {
+      clearInterval(flash);
+      allLights.forEach(l => { l.classList.remove('red','green'); l.classList.add('gold'); });
+    }
+  }, 130);
+
+  document.getElementById('win-line').classList.add('active');
+
+  const result = document.getElementById('slot-result');
+  result.textContent = currentLang === 'kz'
+    ? '🎉 Джекпот! 15 Тамыз 2026 · 17:30'
+    : '🎉 Джекпот! 15 Августа 2026 · 17:30';
+  result.classList.add('show');
+  spawnSparkles();
+
+  const label = document.querySelector('.lever-label');
+  if (label) label.textContent = '✓';
+  leverPulling = false;
+}
+
+function spawnSparkles() {
+  const container = document.getElementById('sparkle-container');
+  container.style.display = 'block';
+  const symbols = ['✦','★','✨','💛','♡','🌟','🎊','🎉'];
+  for (let i = 0; i < 30; i++) {
+    setTimeout(() => {
+      const s = document.createElement('div');
+      s.className = 'sparkle';
+      s.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+      s.style.left = Math.random() * 100 + 'vw';
+      s.style.top = (20 + Math.random() * 70) + 'vh';
+      s.style.fontSize = (16 + Math.random() * 16) + 'px';
+      s.style.animationDelay = Math.random() * 0.8 + 's';
+      container.appendChild(s);
+      setTimeout(() => s.remove(), 2500);
+    }, i * 80);
+  }
+  setTimeout(() => { container.style.display = 'none'; }, 4000);
+}
+
+// ===== CALENDAR =====
+function addToCalendar() {
+  const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Свадьба Нурлан & Тамила')}&dates=20260815T173000/20260815T230000&details=${encodeURIComponent('Свадебное торжество')}&location=${encodeURIComponent('Magauya Grand Hall, Алматы')}`;
+  window.open(url, '_blank');
+}
+</script>
+</body>
+</html>
